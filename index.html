@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluación Cocinero B/C – Sushero</title>
+<style>
+  :root { --ink:#111; --line:#333; --soft:#f2f2f2; --accent:#1f6f4a; --bg:#e9e9e6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.35 Arial, Helvetica, sans-serif; }
+  .bar { position:sticky; top:0; z-index:5; background:#1c1c1c; color:#fff; padding:10px 16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .bar button { border:0; border-radius:6px; padding:8px 14px; font-weight:bold; cursor:pointer; background:#fff; color:#111; }
+  .bar button.primary { background:var(--accent); color:#fff; }
+  .bar .status { margin-left:auto; font-size:12px; opacity:.9; }
+  .cfg { display:none; background:#fff8e1; border-bottom:1px solid #e0c97a; padding:10px 16px; }
+  .cfg.open { display:block; }
+  .cfg input { width:min(640px,100%); padding:6px; }
+  .sheet { max-width:850px; margin:16px auto; background:#fff; padding:22px 22px 28px; box-shadow:0 2px 12px rgba(0,0,0,.15); }
+  h1 { text-align:center; margin:0; font-size:26px; line-height:1.1; letter-spacing:.3px; font-weight:900; }
+  .sub-h { text-align:center; font-weight:bold; margin:4px 0 8px; }
+  input[type=text], input[type=date], input[type=number], textarea { font:inherit; color:inherit; border:0; border-bottom:1px solid var(--line); background:transparent; padding:2px 3px; outline:none; }
+  input:focus, textarea:focus { background:#fffbe6; }
+  textarea { width:100%; resize:vertical; min-height:22px; }
+  textarea.lined { border:0; background:repeating-linear-gradient(transparent 0 21px, #555 21px 22px); line-height:22px; padding:0 3px; }
+  .row { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center; margin:5px 0; }
+  .row label { white-space:nowrap; }
+  .grow { flex:1; min-width:180px; }
+  .chk { display:inline-flex; align-items:center; gap:4px; margin-right:10px; }
+  .box { border:1.5px solid var(--line); margin-top:10px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; }
+  .cols > div + div { border-left:1.5px solid var(--line); }
+  .sec-t { text-align:center; padding:6px 4px 4px; border-bottom:1.5px solid var(--line); font-weight:bold; font-size:14px; }
+  .sec-t small { display:block; font-weight:normal; font-size:11px; }
+  ol { list-style:none; margin:0; padding:6px 10px; }
+  ol li { margin:0 0 9px; }
+  ol label { display:block; font-size:12.5px; }
+  table { width:100%; border-collapse:collapse; }
+  td, th { padding:2px 4px; }
+  .grid td, .grid th { border:1px solid #777; }
+  .grid td:not(.it) { text-align:center; width:34px; }
+  .grid .it { font-size:12px; }
+  .grid tr.grp th { text-align:left; background:var(--soft); font-size:12.5px; }
+  .sub { float:right; font-weight:normal; color:var(--accent); }
+  .scale { text-align:center; font-size:12px; padding:6px; }
+  .tasks td:nth-child(4) { width:150px; }
+  .tasks input[type=text] { width:100%; border:0; }
+  .foot { display:grid; grid-template-columns:1fr 1.4fr 2fr; }
+  .foot > div { padding:8px; text-align:center; }
+  .foot > div + div { border-left:1.5px solid var(--line); }
+  .total input { width:70px; font-size:22px; text-align:center; font-weight:bold; }
+  .total .hint { font-size:11px; color:#555; }
+  .two { display:grid; grid-template-columns:1fr 1fr; }
+  .two > div { padding:8px 10px; }
+  .two > div + div { border-left:1.5px solid var(--line); }
+  .sig { display:flex; gap:30px; margin-top:26px; }
+  .sig > div { flex:1; display:flex; gap:6px; align-items:flex-end; }
+  .sig input { flex:1; }
+  b.lbl { display:block; margin-bottom:4px; font-size:12.5px; }
+  input[type=radio] { width:15px; height:15px; margin:0; accent-color:#222; cursor:pointer; }
+  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:10px 16px; border-radius:8px; display:none; z-index:9; }
+  @media (max-width:720px) {
+    .cols, .foot, .two { grid-template-columns:1fr; }
+    .cols > div + div, .foot > div + div, .two > div + div { border-left:0; border-top:1.5px solid var(--line); }
+    .sheet { padding:14px 12px; margin:0; } h1 { font-size:20px; }
+  }
+  @media print {
+    @page { size:letter; margin:10mm; }
+    body { background:#fff; } .bar, .cfg, .toast { display:none !important; }
+    .sheet { box-shadow:none; margin:0; max-width:none; padding:0; }
+    input:focus, textarea:focus { background:transparent; } textarea { resize:none; }
+    .box { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button class="primary" id="btnSave">Guardar en Google Sheets</button>
+  <button id="btnPrint">Imprimir / PDF</button>
+  <button id="btnNew">Nuevo formulario</button>
+  <button id="btnCfg">Configurar</button>
+  <span class="status" id="status"></span>
+</div>
+<div class="cfg" id="cfg">
+  <b>URL de la Web App de Apps Script:</b><br>
+  <input id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  <button id="btnCfgSave">Guardar URL</button>
+</div>
+
+<form class="sheet" id="f" autocomplete="off">
+  <h1>EVALUACIÓN DE ENTREVISTA Y DESEMPEÑO<br>COCINERO B/C – SUSHERO</h1>
+  <div class="sub-h">HOTEL – ÁREA DE COCINA</div>
+
+  <div class="row"><label>Nombre del candidato:</label><input class="grow" type="text" name="Candidato" required>
+    <label>Fecha:</label><input type="date" name="Fecha"></div>
+  <div class="row"><label>Puesto al que aplica:</label>
+    <span class="chk"><input type="checkbox" name="Puesto" value="Cocinero A">Cocinero A</span>
+    <span class="chk"><input type="checkbox" name="Puesto" value="Cocinero B/C">Cocinero B/C</span>
+    <span class="chk"><input type="checkbox" name="Puesto" value="Sushero">Sushero</span>
+    <span class="chk"><input type="checkbox" name="Puesto" value="Ayudante de cocina">Ayudante de cocina</span>
+    <span style="flex:1"></span>
+    <label>Experiencia en el puesto:</label><input type="number" min="0" step="0.5" name="Experiencia (años)" style="width:70px"> años</div>
+  <div class="row"><label>Evaluador:</label><input class="grow" type="text" name="Evaluador">
+    <label>Turno disponible:</label>
+    <span class="chk"><input type="checkbox" name="Turno" value="AM">AM</span>
+    <span class="chk"><input type="checkbox" name="Turno" value="PM">PM</span>
+    <span class="chk"><input type="checkbox" name="Turno" value="NOCHE">NOCHE</span>
+    <span class="chk"><input type="checkbox" name="Turno" value="ROTATIVO">ROTATIVO</span></div>
+
+  <div class="box cols">
+    <div>
+      <div class="sec-t">I. ENTREVISTA – PREGUNTAS CLAVE<small>(Evalúa actitud, compromiso y criterio)</small></div>
+      <ol><li><label>1. ¿Por qué quieres trabajar en nuestro hotel?</label><textarea name="P1" rows="1"></textarea></li><li><label>2. ¿Qué te motiva a dar lo mejor de ti en la cocina?</label><textarea name="P2" rows="1"></textarea></li><li><label>3. ¿Cuál ha sido tu mayor aprendizaje o experiencia en cocina?</label><textarea name="P3" rows="1"></textarea></li><li><label>4. ¿Qué harías si en pleno servicio se te acaba un producto importante?</label><textarea name="P4" rows="1"></textarea></li><li><label>5. ¿Cómo manejas la presión y el trabajo bajo tiempo?</label><textarea name="P5" rows="1"></textarea></li><li><label>6. ¿Qué haces cuando cometes un error?</label><textarea name="P6" rows="1"></textarea></li><li><label>7. ¿Cómo te llevas con tus compañeros de trabajo?</label><textarea name="P7" rows="1"></textarea></li><li><label>8. ¿Qué esperas de tu jefe y del equipo de trabajo?</label><textarea name="P8" rows="1"></textarea></li><li><label>9. ¿Has tenido problemas de puntualidad o ausencias? ¿Por qué?</label><textarea name="P9" rows="1"></textarea></li><li><label>10. ¿Hasta dónde te ves llegar en este hotel?</label><textarea name="P10" rows="1"></textarea></li><li><label>11. ¿Cómo te visualizas en 1 año acá en el hotel?</label><textarea name="P11" rows="1"></textarea></li><li><label>12. ¿Qué aportas tú que haría diferente o mejor nuestra cocina?</label><textarea name="P12" rows="1"></textarea></li><li><label>13. ¿Conoces y aplicas normas de higiene e inocuidad? Explica.</label><textarea name="P13" rows="1"></textarea></li><li><label>14. ¿Tienes disponibilidad para aprender y asumir nuevas tareas?</label><textarea name="P14" rows="1"></textarea></li><li><label>15. ¿Tienes disponibilidad de horarios, fines de semana y feriados?</label><textarea name="P15" rows="1"></textarea></li></ol>
+    </div>
+    <div>
+      <div class="sec-t">II. EVALUACIÓN PRÁCTICA Y DESEMPEÑO<small>(Durante la prueba de trabajo)</small></div>
+      <div class="scale">Califique de 1 a 5 &nbsp;(1 = Deficiente &nbsp; 3 = Aceptable &nbsp; 5 = Excelente)</div>
+      <table class="grid">
+        <tr><th>CRITERIOS A EVALUAR</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+        <tr class="grp"><th colspan="6">A. HIGIENE, SEGURIDAD E INOCUIDAD <span class="sub" id="subA">0/25</span></th></tr><tr><td class="it">• Cumple normas de higiene personal</td><td><input type="radio" name="A1" value="1" aria-label="Cumple normas de higiene personal 1"></td><td><input type="radio" name="A1" value="2" aria-label="Cumple normas de higiene personal 2"></td><td><input type="radio" name="A1" value="3" aria-label="Cumple normas de higiene personal 3"></td><td><input type="radio" name="A1" value="4" aria-label="Cumple normas de higiene personal 4"></td><td><input type="radio" name="A1" value="5" aria-label="Cumple normas de higiene personal 5"></td></tr><tr><td class="it">• Uso adecuado de uniforme y EPP</td><td><input type="radio" name="A2" value="1" aria-label="Uso adecuado de uniforme y EPP 1"></td><td><input type="radio" name="A2" value="2" aria-label="Uso adecuado de uniforme y EPP 2"></td><td><input type="radio" name="A2" value="3" aria-label="Uso adecuado de uniforme y EPP 3"></td><td><input type="radio" name="A2" value="4" aria-label="Uso adecuado de uniforme y EPP 4"></td><td><input type="radio" name="A2" value="5" aria-label="Uso adecuado de uniforme y EPP 5"></td></tr><tr><td class="it">• Lavado y desinfección de manos correcto</td><td><input type="radio" name="A3" value="1" aria-label="Lavado y desinfección de manos correcto 1"></td><td><input type="radio" name="A3" value="2" aria-label="Lavado y desinfección de manos correcto 2"></td><td><input type="radio" name="A3" value="3" aria-label="Lavado y desinfección de manos correcto 3"></td><td><input type="radio" name="A3" value="4" aria-label="Lavado y desinfección de manos correcto 4"></td><td><input type="radio" name="A3" value="5" aria-label="Lavado y desinfección de manos correcto 5"></td></tr><tr><td class="it">• Manejo higiénico de alimentos</td><td><input type="radio" name="A4" value="1" aria-label="Manejo higiénico de alimentos 1"></td><td><input type="radio" name="A4" value="2" aria-label="Manejo higiénico de alimentos 2"></td><td><input type="radio" name="A4" value="3" aria-label="Manejo higiénico de alimentos 3"></td><td><input type="radio" name="A4" value="4" aria-label="Manejo higiénico de alimentos 4"></td><td><input type="radio" name="A4" value="5" aria-label="Manejo higiénico de alimentos 5"></td></tr><tr><td class="it">• Limpieza y orden en su área de trabajo</td><td><input type="radio" name="A5" value="1" aria-label="Limpieza y orden en su área de trabajo 1"></td><td><input type="radio" name="A5" value="2" aria-label="Limpieza y orden en su área de trabajo 2"></td><td><input type="radio" name="A5" value="3" aria-label="Limpieza y orden en su área de trabajo 3"></td><td><input type="radio" name="A5" value="4" aria-label="Limpieza y orden en su área de trabajo 4"></td><td><input type="radio" name="A5" value="5" aria-label="Limpieza y orden en su área de trabajo 5"></td></tr><tr class="grp"><th colspan="6">B. ORGANIZACIÓN Y MISE EN PLACE <span class="sub" id="subB">0/25</span></th></tr><tr><td class="it">• Lee y comprende fichas técnicas</td><td><input type="radio" name="B1" value="1" aria-label="Lee y comprende fichas técnicas 1"></td><td><input type="radio" name="B1" value="2" aria-label="Lee y comprende fichas técnicas 2"></td><td><input type="radio" name="B1" value="3" aria-label="Lee y comprende fichas técnicas 3"></td><td><input type="radio" name="B1" value="4" aria-label="Lee y comprende fichas técnicas 4"></td><td><input type="radio" name="B1" value="5" aria-label="Lee y comprende fichas técnicas 5"></td></tr><tr><td class="it">• Organiza su estación correctamente</td><td><input type="radio" name="B2" value="1" aria-label="Organiza su estación correctamente 1"></td><td><input type="radio" name="B2" value="2" aria-label="Organiza su estación correctamente 2"></td><td><input type="radio" name="B2" value="3" aria-label="Organiza su estación correctamente 3"></td><td><input type="radio" name="B2" value="4" aria-label="Organiza su estación correctamente 4"></td><td><input type="radio" name="B2" value="5" aria-label="Organiza su estación correctamente 5"></td></tr><tr><td class="it">• Prepara ingredientes y mise en place</td><td><input type="radio" name="B3" value="1" aria-label="Prepara ingredientes y mise en place 1"></td><td><input type="radio" name="B3" value="2" aria-label="Prepara ingredientes y mise en place 2"></td><td><input type="radio" name="B3" value="3" aria-label="Prepara ingredientes y mise en place 3"></td><td><input type="radio" name="B3" value="4" aria-label="Prepara ingredientes y mise en place 4"></td><td><input type="radio" name="B3" value="5" aria-label="Prepara ingredientes y mise en place 5"></td></tr><tr><td class="it">• Verifica utensilios y equipos necesarios</td><td><input type="radio" name="B4" value="1" aria-label="Verifica utensilios y equipos necesarios 1"></td><td><input type="radio" name="B4" value="2" aria-label="Verifica utensilios y equipos necesarios 2"></td><td><input type="radio" name="B4" value="3" aria-label="Verifica utensilios y equipos necesarios 3"></td><td><input type="radio" name="B4" value="4" aria-label="Verifica utensilios y equipos necesarios 4"></td><td><input type="radio" name="B4" value="5" aria-label="Verifica utensilios y equipos necesarios 5"></td></tr><tr><td class="it">• Almacena y etiqueta correctamente</td><td><input type="radio" name="B5" value="1" aria-label="Almacena y etiqueta correctamente 1"></td><td><input type="radio" name="B5" value="2" aria-label="Almacena y etiqueta correctamente 2"></td><td><input type="radio" name="B5" value="3" aria-label="Almacena y etiqueta correctamente 3"></td><td><input type="radio" name="B5" value="4" aria-label="Almacena y etiqueta correctamente 4"></td><td><input type="radio" name="B5" value="5" aria-label="Almacena y etiqueta correctamente 5"></td></tr><tr class="grp"><th colspan="6">C. TÉCNICA Y CONOCIMIENTO <span class="sub" id="subC">0/25</span></th></tr><tr><td class="it">• Manejo de cortes y técnicas adecuadas</td><td><input type="radio" name="C1" value="1" aria-label="Manejo de cortes y técnicas adecuadas 1"></td><td><input type="radio" name="C1" value="2" aria-label="Manejo de cortes y técnicas adecuadas 2"></td><td><input type="radio" name="C1" value="3" aria-label="Manejo de cortes y técnicas adecuadas 3"></td><td><input type="radio" name="C1" value="4" aria-label="Manejo de cortes y técnicas adecuadas 4"></td><td><input type="radio" name="C1" value="5" aria-label="Manejo de cortes y técnicas adecuadas 5"></td></tr><tr><td class="it">• Aplica métodos de cocción correctamente</td><td><input type="radio" name="C2" value="1" aria-label="Aplica métodos de cocción correctamente 1"></td><td><input type="radio" name="C2" value="2" aria-label="Aplica métodos de cocción correctamente 2"></td><td><input type="radio" name="C2" value="3" aria-label="Aplica métodos de cocción correctamente 3"></td><td><input type="radio" name="C2" value="4" aria-label="Aplica métodos de cocción correctamente 4"></td><td><input type="radio" name="C2" value="5" aria-label="Aplica métodos de cocción correctamente 5"></td></tr><tr><td class="it">• Conoce puntos de cocción y temperaturas</td><td><input type="radio" name="C3" value="1" aria-label="Conoce puntos de cocción y temperaturas 1"></td><td><input type="radio" name="C3" value="2" aria-label="Conoce puntos de cocción y temperaturas 2"></td><td><input type="radio" name="C3" value="3" aria-label="Conoce puntos de cocción y temperaturas 3"></td><td><input type="radio" name="C3" value="4" aria-label="Conoce puntos de cocción y temperaturas 4"></td><td><input type="radio" name="C3" value="5" aria-label="Conoce puntos de cocción y temperaturas 5"></td></tr><tr><td class="it">• Respeta recetas, cantidades y estándares</td><td><input type="radio" name="C4" value="1" aria-label="Respeta recetas, cantidades y estándares 1"></td><td><input type="radio" name="C4" value="2" aria-label="Respeta recetas, cantidades y estándares 2"></td><td><input type="radio" name="C4" value="3" aria-label="Respeta recetas, cantidades y estándares 3"></td><td><input type="radio" name="C4" value="4" aria-label="Respeta recetas, cantidades y estándares 4"></td><td><input type="radio" name="C4" value="5" aria-label="Respeta recetas, cantidades y estándares 5"></td></tr><tr><td class="it">• Presenta dominio en su puesto (BC/Sushi)</td><td><input type="radio" name="C5" value="1" aria-label="Presenta dominio en su puesto (BC/Sushi) 1"></td><td><input type="radio" name="C5" value="2" aria-label="Presenta dominio en su puesto (BC/Sushi) 2"></td><td><input type="radio" name="C5" value="3" aria-label="Presenta dominio en su puesto (BC/Sushi) 3"></td><td><input type="radio" name="C5" value="4" aria-label="Presenta dominio en su puesto (BC/Sushi) 4"></td><td><input type="radio" name="C5" value="5" aria-label="Presenta dominio en su puesto (BC/Sushi) 5"></td></tr><tr class="grp"><th colspan="6">D. PRODUCTO FINAL <span class="sub" id="subD">0/25</span></th></tr><tr><td class="it">• Presentación atractiva y limpia</td><td><input type="radio" name="D1" value="1" aria-label="Presentación atractiva y limpia 1"></td><td><input type="radio" name="D1" value="2" aria-label="Presentación atractiva y limpia 2"></td><td><input type="radio" name="D1" value="3" aria-label="Presentación atractiva y limpia 3"></td><td><input type="radio" name="D1" value="4" aria-label="Presentación atractiva y limpia 4"></td><td><input type="radio" name="D1" value="5" aria-label="Presentación atractiva y limpia 5"></td></tr><tr><td class="it">• Sabor, sazón y balance adecuados</td><td><input type="radio" name="D2" value="1" aria-label="Sabor, sazón y balance adecuados 1"></td><td><input type="radio" name="D2" value="2" aria-label="Sabor, sazón y balance adecuados 2"></td><td><input type="radio" name="D2" value="3" aria-label="Sabor, sazón y balance adecuados 3"></td><td><input type="radio" name="D2" value="4" aria-label="Sabor, sazón y balance adecuados 4"></td><td><input type="radio" name="D2" value="5" aria-label="Sabor, sazón y balance adecuados 5"></td></tr><tr><td class="it">• Cocción y textura correctas</td><td><input type="radio" name="D3" value="1" aria-label="Cocción y textura correctas 1"></td><td><input type="radio" name="D3" value="2" aria-label="Cocción y textura correctas 2"></td><td><input type="radio" name="D3" value="3" aria-label="Cocción y textura correctas 3"></td><td><input type="radio" name="D3" value="4" aria-label="Cocción y textura correctas 4"></td><td><input type="radio" name="D3" value="5" aria-label="Cocción y textura correctas 5"></td></tr><tr><td class="it">• Porciones y montaje según estándar</td><td><input type="radio" name="D4" value="1" aria-label="Porciones y montaje según estándar 1"></td><td><input type="radio" name="D4" value="2" aria-label="Porciones y montaje según estándar 2"></td><td><input type="radio" name="D4" value="3" aria-label="Porciones y montaje según estándar 3"></td><td><input type="radio" name="D4" value="4" aria-label="Porciones y montaje según estándar 4"></td><td><input type="radio" name="D4" value="5" aria-label="Porciones y montaje según estándar 5"></td></tr><tr><td class="it">• Calidad constante en sus platillos</td><td><input type="radio" name="D5" value="1" aria-label="Calidad constante en sus platillos 1"></td><td><input type="radio" name="D5" value="2" aria-label="Calidad constante en sus platillos 2"></td><td><input type="radio" name="D5" value="3" aria-label="Calidad constante en sus platillos 3"></td><td><input type="radio" name="D5" value="4" aria-label="Calidad constante en sus platillos 4"></td><td><input type="radio" name="D5" value="5" aria-label="Calidad constante en sus platillos 5"></td></tr><tr class="grp"><th colspan="6">E. ACTITUD Y TRABAJO EN EQUIPO <span class="sub" id="subE">0/25</span></th></tr><tr><td class="it">• Escucha y sigue instrucciones</td><td><input type="radio" name="E1" value="1" aria-label="Escucha y sigue instrucciones 1"></td><td><input type="radio" name="E1" value="2" aria-label="Escucha y sigue instrucciones 2"></td><td><input type="radio" name="E1" value="3" aria-label="Escucha y sigue instrucciones 3"></td><td><input type="radio" name="E1" value="4" aria-label="Escucha y sigue instrucciones 4"></td><td><input type="radio" name="E1" value="5" aria-label="Escucha y sigue instrucciones 5"></td></tr><tr><td class="it">• Comunicación clara y respetuosa</td><td><input type="radio" name="E2" value="1" aria-label="Comunicación clara y respetuosa 1"></td><td><input type="radio" name="E2" value="2" aria-label="Comunicación clara y respetuosa 2"></td><td><input type="radio" name="E2" value="3" aria-label="Comunicación clara y respetuosa 3"></td><td><input type="radio" name="E2" value="4" aria-label="Comunicación clara y respetuosa 4"></td><td><input type="radio" name="E2" value="5" aria-label="Comunicación clara y respetuosa 5"></td></tr><tr><td class="it">• Colabora y apoya al equipo</td><td><input type="radio" name="E3" value="1" aria-label="Colabora y apoya al equipo 1"></td><td><input type="radio" name="E3" value="2" aria-label="Colabora y apoya al equipo 2"></td><td><input type="radio" name="E3" value="3" aria-label="Colabora y apoya al equipo 3"></td><td><input type="radio" name="E3" value="4" aria-label="Colabora y apoya al equipo 4"></td><td><input type="radio" name="E3" value="5" aria-label="Colabora y apoya al equipo 5"></td></tr><tr><td class="it">• Iniciativa y disposición para aprender</td><td><input type="radio" name="E4" value="1" aria-label="Iniciativa y disposición para aprender 1"></td><td><input type="radio" name="E4" value="2" aria-label="Iniciativa y disposición para aprender 2"></td><td><input type="radio" name="E4" value="3" aria-label="Iniciativa y disposición para aprender 3"></td><td><input type="radio" name="E4" value="4" aria-label="Iniciativa y disposición para aprender 4"></td><td><input type="radio" name="E4" value="5" aria-label="Iniciativa y disposición para aprender 5"></td></tr><tr><td class="it">• Mantiene actitud positiva bajo presión</td><td><input type="radio" name="E5" value="1" aria-label="Mantiene actitud positiva bajo presión 1"></td><td><input type="radio" name="E5" value="2" aria-label="Mantiene actitud positiva bajo presión 2"></td><td><input type="radio" name="E5" value="3" aria-label="Mantiene actitud positiva bajo presión 3"></td><td><input type="radio" name="E5" value="4" aria-label="Mantiene actitud positiva bajo presión 4"></td><td><input type="radio" name="E5" value="5" aria-label="Mantiene actitud positiva bajo presión 5"></td></tr>
+        <tr class="grp"><th colspan="6">SUMA PRÁCTICA <span class="sub" id="sumP">0/125</span></th></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box cols">
+    <div>
+      <div class="sec-t">III. CONOCIMIENTOS GENERALES (Escrito / Oral)<small>Responda brevemente</small></div>
+      <ol><li><label>1. ¿Qué es el método PEPS y por qué es importante?</label><textarea name="CG1" rows="1"></textarea></li><li><label>2. Menciona 3 tipos de limpieza en la cocina y cuándo se aplican.</label><textarea name="CG2" rows="1"></textarea></li><li><label>3. ¿Qué es una merma y qué es un desperdicio? Da un ejemplo de cada uno.</label><textarea name="CG3" rows="1"></textarea></li><li><label>4. ¿Cómo se deben tomar y registrar temperaturas de los alimentos?</label><textarea name="CG4" rows="1"></textarea></li><li><label>5. ¿Dónde se registran las producciones, mermas y desperdicios y por qué?</label><textarea name="CG5" rows="1"></textarea></li><li><label>6. ¿Qué harías si recibes un producto en mal estado?</label><textarea name="CG6" rows="1"></textarea></li></ol>
+    </div>
+    <div>
+      <div class="sec-t">IV. TAREAS PRÁCTICAS A EVALUAR<small>Marque si realizó correctamente</small></div>
+      <table class="grid tasks">
+        <tr><th>TAREA</th><th>SI</th><th>NO</th><th>OBSERVACIÓN</th></tr>
+        <tr><td class="it">• Preparó mise en place completo y ordenado</td><td><input type="radio" name="T1" value="SI" aria-label="Sí"></td><td><input type="radio" name="T1" value="NO" aria-label="No"></td><td><input type="text" name="T1 Obs"></td></tr><tr><td class="it">• Realizó cortes según especificación</td><td><input type="radio" name="T2" value="SI" aria-label="Sí"></td><td><input type="radio" name="T2" value="NO" aria-label="No"></td><td><input type="text" name="T2 Obs"></td></tr><tr><td class="it">• Preparó un platillo cumpliendo la receta</td><td><input type="radio" name="T3" value="SI" aria-label="Sí"></td><td><input type="radio" name="T3" value="NO" aria-label="No"></td><td><input type="text" name="T3 Obs"></td></tr><tr><td class="it">• Controló tiempos y temperaturas</td><td><input type="radio" name="T4" value="SI" aria-label="Sí"></td><td><input type="radio" name="T4" value="NO" aria-label="No"></td><td><input type="text" name="T4 Obs"></td></tr><tr><td class="it">• Mantuvo limpieza y orden durante la prueba</td><td><input type="radio" name="T5" value="SI" aria-label="Sí"></td><td><input type="radio" name="T5" value="NO" aria-label="No"></td><td><input type="text" name="T5 Obs"></td></tr><tr><td class="it">• Montó y presentó el plato según estándar</td><td><input type="radio" name="T6" value="SI" aria-label="Sí"></td><td><input type="radio" name="T6" value="NO" aria-label="No"></td><td><input type="text" name="T6 Obs"></td></tr><tr><td class="it">• Demostró manejo adecuado de cuchillos</td><td><input type="radio" name="T7" value="SI" aria-label="Sí"></td><td><input type="radio" name="T7" value="NO" aria-label="No"></td><td><input type="text" name="T7 Obs"></td></tr><tr><td class="it">• Demostró dominio en su área (BC / Sushi)</td><td><input type="radio" name="T8" value="SI" aria-label="Sí"></td><td><input type="radio" name="T8" value="NO" aria-label="No"></td><td><input type="text" name="T8 Obs"></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box foot">
+    <div class="total"><b>PUNTAJE TOTAL</b><br><input type="number" min="0" max="100" name="Puntaje total (/100)" id="total"> / 100
+      <div class="hint">Calculado de la sección II (editable)</div></div>
+    <div><b>¿APTO PARA EL PUESTO?</b><br><br>
+      <span class="chk"><input type="radio" name="Apto" value="SÍ">SÍ</span>
+      <span class="chk"><input type="radio" name="Apto" value="NO">NO</span>
+      <span class="chk"><input type="radio" name="Apto" value="CONDICIONADO">CONDICIONADO</span></div>
+    <div style="text-align:left"><b class="lbl" style="text-align:center">RECOMENDACIÓN DEL EVALUADOR</b>
+      <textarea name="Recomendación" rows="3" class="lined"></textarea></div>
+  </div>
+
+  <div class="box two">
+    <div><b class="lbl">FORTALEZAS OBSERVADAS</b><textarea name="Fortalezas" rows="4" class="lined"></textarea></div>
+    <div><b class="lbl">ASPECTOS POR MEJORAR</b><textarea name="Aspectos por mejorar" rows="4" class="lined"></textarea></div>
+  </div>
+
+  <div class="sig">
+    <div><label>Firma del evaluador:</label><input type="text" tabindex="-1"></div>
+    <div><label>Firma del candidato:</label><input type="text" tabindex="-1"></div>
+  </div>
+</form>
+<div class="toast" id="toast"></div>
+
+<script>
+const HEADERS = ["Registrado", "Fecha", "Candidato", "Puesto", "Experiencia (años)", "Evaluador", "Turno", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14", "P15", "CG1", "CG2", "CG3", "CG4", "CG5", "CG6", "A1", "A2", "A3", "A4", "A5", "Subtotal A", "B1", "B2", "B3", "B4", "B5", "Subtotal B", "C1", "C2", "C3", "C4", "C5", "Subtotal C", "D1", "D2", "D3", "D4", "D5", "Subtotal D", "E1", "E2", "E3", "E4", "E5", "Subtotal E", "Suma práctica (/125)", "T1", "T1 Obs", "T2", "T2 Obs", "T3", "T3 Obs", "T4", "T4 Obs", "T5", "T5 Obs", "T6", "T6 Obs", "T7", "T7 Obs", "T8", "T8 Obs", "Tareas cumplidas (/8)", "Puntaje total (/100)", "Apto", "Recomendación", "Fortalezas", "Aspectos por mejorar"];
+const CRIT = [["A", 5], ["B", 5], ["C", 5], ["D", 5], ["E", 5]];
+const DEFAULT_URL = "";   // ← opcional: pegue aquí la URL de su Web App para todos los usuarios
+const f = document.getElementById('f');
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+                set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+                del(k){ try { localStorage.removeItem(k); } catch(e){} } };
+const $ = id => document.getElementById(id);
+function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',3500); }
+function radio(n){ const el=f.querySelector(`input[name="${CSS.escape(n)}"]:checked`); return el?el.value:''; }
+
+let totalTouched = false;
+function calc(){
+  let sum=0;
+  CRIT.forEach(([k,n])=>{ let s=0; for(let i=1;i<=n;i++) s+=+radio(k+i)||0; $('sub'+k).textContent=s+'/'+(n*5); sum+=s; });
+  $('sumP').textContent=sum+'/125';
+  if(!totalTouched) $('total').value = sum ? Math.round(sum/125*100) : '';
+  return sum;
+}
+$('total').addEventListener('input', ()=>{ totalTouched = $('total').value!==''; });
+
+function collect(){
+  const d = {};
+  f.querySelectorAll('input[name],textarea[name]').forEach(el=>{
+    const n=el.name;
+    if(el.type==='radio'){ if(!(n in d)) d[n]=''; if(el.checked) d[n]=el.value; }
+    else if(el.type==='checkbox'){ d[n]=d[n]||[]; if(el.checked) d[n].push(el.value); }
+    else d[n]=el.value;
+  });
+  Object.keys(d).forEach(k=>{ if(Array.isArray(d[k])) d[k]=d[k].join(', '); });
+  CRIT.forEach(([k,n])=>{ let s=0; for(let i=1;i<=n;i++) s+=+d[k+i]||0; d['Subtotal '+k]=s; });
+  d['Suma práctica (/125)']=calc();
+  d['Tareas cumplidas (/8)']=[1,2,3,4,5,6,7,8].filter(i=>d['T'+i]==='SI').length;
+  d['Registrado']=new Date().toLocaleString('es-CR');
+  return d;
+}
+
+function saveDraft(){ store.set('evalDraft', JSON.stringify(collect())); }
+function loadDraft(){
+  const raw=store.get('evalDraft'); if(!raw) return;
+  let d; try{ d=JSON.parse(raw);}catch(e){return;}
+  f.querySelectorAll('input[name],textarea[name]').forEach(el=>{
+    const v=d[el.name]; if(v==null) return;
+    if(el.type==='radio') el.checked = (el.value===String(v));
+    else if(el.type==='checkbox') el.checked = String(v).split(', ').includes(el.value);
+    else el.value=v;
+  });
+  if(d['Puntaje total (/100)']!=='' && +d['Puntaje total (/100)']!==Math.round((+d['Suma práctica (/125)']||0)/125*100)) totalTouched=true;
+}
+
+function autoGrow(t){ if(t.classList.contains('lined')) return; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
+f.addEventListener('input', e=>{ if(e.target.tagName==='TEXTAREA') autoGrow(e.target); calc(); saveDraft(); });
+f.addEventListener('change', ()=>{ calc(); saveDraft(); });
+
+function getUrl(){ return store.get('evalScriptUrl') || DEFAULT_URL; }
+$('btnCfg').onclick=()=>{ $('cfg').classList.toggle('open'); $('scriptUrl').value=getUrl(); };
+$('btnCfgSave').onclick=()=>{ store.set('evalScriptUrl',$('scriptUrl').value.trim()); $('cfg').classList.remove('open'); setStatus(); toast('URL guardada'); };
+function setStatus(){ $('status').textContent = getUrl() ? 'Conectado a Google Sheets' : 'Sin conexión a Sheets — pulse Configurar'; }
+
+$('btnSave').onclick=async()=>{
+  const d=collect();
+  if(!d['Candidato'].trim()){ toast('Escriba el nombre del candidato'); f.Candidato.focus(); return; }
+  const url=getUrl();
+  if(!url){ $('cfg').classList.add('open'); toast('Primero configure la URL de Apps Script'); return; }
+  const btn=$('btnSave'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)});
+    toast('✓ Evaluación enviada a Google Sheets'); store.set('evalLastSent', d['Registrado']);
+  }catch(e){ toast('No se pudo enviar. Revise la conexión e intente de nuevo.'); }
+  btn.disabled=false; btn.textContent='Guardar en Google Sheets';
+};
+$('btnPrint').onclick=()=>window.print();
+$('btnNew').onclick=()=>{ if(!confirm('¿Borrar el formulario actual y empezar uno nuevo?')) return; f.reset(); totalTouched=false; store.del('evalDraft'); calc(); f.Fecha.valueAsDate=new Date(); };
+
+loadDraft(); if(!f.Fecha.value) f.Fecha.valueAsDate=new Date();
+f.querySelectorAll('textarea').forEach(autoGrow); calc(); setStatus();
+</script>
+</body>
+</html>
