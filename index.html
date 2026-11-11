@@ -213,12 +213,10 @@ function autoGrow(t){ if(t.classList.contains('lined')) return; t.style.height='
 f.addEventListener('input', e=>{ if(e.target.tagName==='TEXTAREA') autoGrow(e.target); calc(); saveDraft(); });
 f.addEventListener('change', ()=>{ calc(); saveDraft(); });
 
-function getUrl(){ return store.get('evalScriptUrl') || DEFAULT_URL; }
-$('btnCfg').onclick=()=>{ $('cfg').classList.toggle('open'); $('scriptUrl').value=getUrl(); };
-$('btnCfgSave').onclick=()=>{ store.set('evalScriptUrl',$('scriptUrl').value.trim()); $('cfg').classList.remove('open'); setStatus(); toast('URL guardada'); };
-function setStatus(){ $('status').textContent = getUrl() ? 'Conectado a Google Sheets' : 'Sin conexión a Sheets — pulse Configurar'; }
+function getUrl(){ return DEFAULT_URL; }
+function setStatus(){ $('status').textContent = ''; }
 
-$('btnSave').onclick=async()=>{
+  $('btnSave').onclick=async()=>{
   const d=collect();
   if(!d['Candidato'].trim()){ toast('Escriba el nombre del candidato'); f.Candidato.focus(); return; }
   const url=getUrl();
